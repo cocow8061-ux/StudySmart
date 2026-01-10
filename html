@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySmart - AI-Powered Study Planner</title>
+    <!-- Bootstrap CSS for responsiveness -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-black: #121212;
+            --secondary-black: #1e1e1e;
+            --accent-gold: #FFD700;
+            --light-gold: #FFEC8B;
+            --white: #FFFFFF;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #424242;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--white);
+            color: var(--primary-black);
+            transition: var(--transition);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background-color: var(--primary-black);
+            color: var(--white);
+        }
+
+        /* Navigation */
+        .navbar {
+            background-color: var(--primary-black);
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--accent-gold) !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand i {
+            margin-right: 0.5rem;
+        }
+
+        .nav-link {
+            color: var(--white) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-gold) !important;
+        }
+
+        .nav-link.active {
+            color: var(--accent-gold) !important;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-gold);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: var(--white);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--accent-gold);
+        }
+
+        /* Page Container */
+        .page-container {
+            display: none;
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+        }
+
+        .page-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Common Elements */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        .section-title {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+            color: var(--primary-black);
+        }
+
+        .dark-mode .section-title {
+            color: var(--white);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-gold), var(--light-gold));
+        }
+
+        .btn-primary {
+            background-color: var(--accent-gold);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-black);
+            color: var(--accent-gold);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .dark-mode .btn-primary:hover {
+            background-color: var(--white);
+        }
+
+        .btn-secondary {
+            background-color: var(--primary-black);
+            color: var(--white);
+            border: 2px solid var(--accent-gold);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--accent-gold);
+            color: var(--primary-black);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dark-mode .card {
+            background-color: var(--secondary-black);
+            color: var(--white);
+        }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, var(--accent-gold), var(--light-gold));
+        }
+
+        /* Landing Page */
+        .hero {
+            background: linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.95)), url('https://images.unsplash.com/photo-1495465798138-718f86d1a4bc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            padding: 6rem 0;
+            border-radius: 0 0 40px 40px;
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--accent-gold);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            height: 100%;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Dashboard Page */
+        .calendar {
+            background-color: var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dark-mode .calendar {
+            background-color: var(--secondary-black);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-height: 100px;
+            position: relative;
+        }
+
+        .dark-mode .calendar-day {
+            background-color: var(--primary-black);
+            border: 1px solid var(--dark-gray);
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 0.5rem;
+            color: var(--accent-gold);
+        }
+
+        .calendar-event {
+            background-color: var(--accent-gold);
+            color: var(--primary-black);
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+
+        .progress-summary {
+            margin-top: 2rem;
+        }
+
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background-color: var(--medium-gray);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-gold), var(--light-gold));
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+
+        .quick-add-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-gold);
+            color: var(--primary-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .quick-add-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Schedule Planner */
+        .schedule-form {
+            background-color: var(--light-gray);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .dark-mode .schedule-form {
+            background-color: var(--secondary-black);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.75rem;
+            border: 1px solid var(--medium-gray);
+            transition: var(--transition);
+        }
+
+        .dark-mode .form-control, .dark-mode .form-select {
+            background-color: var(--primary-black);
+            border-color: var(--dark-gray);
+            color: var(--white);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25);
+        }
+
+        .schedule-item {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-gold);
+            cursor: move;
+        }
+
+        .dark-mode .schedule-item {
+            background-color: var(--primary-black);
+        }
+
+        .schedule-item.dragging {
+            opacity: 0.5;
+        }
+
+        /* Focus Timer */
+        .timer-container {
+            background: linear-gradient(135deg, var(--primary-black), var(--secondary-black));
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            color: var(--white);
+            margin-bottom: 2rem;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin: 1.5rem 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .subject-tracking {
+            background-color: var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .dark-mode .subject-tracking {
+            background-color: var(--secondary-black);
+        }
+
+        .sound-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--medium-gray);
+            transition: var(--transition);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--white);
+            transition: var(--transition);
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-gold);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Resources Page */
+        .resource-upload {
+            background-color: var(--light-gray);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dark-mode .resource-upload {
+            background-color: var(--secondary-black);
+        }
+
+        .resource-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resource-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--accent-gold);
+            color: var(--primary-black);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Analytics Page */
+        .chart-container {
+            background-color: var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            height: 300px;
+        }
+
+        .dark-mode .chart-container {
+            background-color: var(--secondary-black);
+        }
+
+        /* Profile Page */
+        .profile-card {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--accent-gold);
+            margin: 0 auto 1.5rem;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .dark-mode .settings-option {
+            border-bottom-color: var(--dark-gray);
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--primary-black);
+            color: var(--white);
+            padding: 3rem 0 1.5rem;
+            margin-top: 4rem;
+        }
+
+        .footer h5 {
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer a {
+            color: var(--medium-gray);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--accent-gold);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--dark-gray);
+            padding-top: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .timer-display {
+                font-size: 3.5rem;
+            }
+            
+            .calendar-grid {
+                gap: 0.25rem;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 0.5rem;
+            }
+            
+            .calendar-event {
+                font-size: 0.7rem;
+                padding: 0.1rem 0.25rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero {
+                padding: 4rem 0;
+            }
+            
+            .timer-display {
+                font-size: 2.5rem;
+            }
+            
+            .calendar-day {
+                min-height: 70px;
+                font-size: 0.8rem;
+            }
+            
+            .calendar-day-header {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#" data-page="home">
+                <i class="fas fa-graduation-cap"></i> StudySmart
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="color: white; font-size: 1.5rem;">
+                    <i class="fas fa-bars"></i>
+                </span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="schedule">Schedule Planner</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="focus">Focus Timer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="resources">Resources</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="analytics">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="profile">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Quick Add Button (for Dashboard) -->
+    <div class="quick-add-btn" id="quickAddBtn" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- Page Containers -->
+    <div class="container">
+        <!-- Home Page -->
+        <div id="home-page" class="page-container active">
+            <section class="hero">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6">
+                            <h1>Plan Smarter, Study Better</h1>
+                            <p>StudySmart is an AI-powered study planner that helps students organize their coursework, manage deadlines, and optimize study schedules for maximum productivity and academic success.</p>
+                            <div class="mt-4">
+                                <button class="btn btn-primary me-3" id="signUpBtn">Sign Up Now</button>
+                                <button class="btn btn-secondary" id="tryDemoBtn">Try Demo</button>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 text-center">
+                            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Student studying" class="img-fluid rounded" style="max-height: 400px;">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="features py-5">
+                <div class="container">
+                    <h2 class="section-title text-center">Core Features</h2>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <h4>AI-Powered Scheduling</h4>
+                                <p>Get personalized study schedules generated by AI based on your courses, deadlines, and preferences.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>Progress Analytics</h4>
+                                <p>Track your study habits, completion rates, and subject focus with detailed charts and insights.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-stopwatch"></i>
+                                </div>
+                                <h4>Focus Timer</h4>
+                                <p>Boost productivity with Pomodoro technique timer and ambient sounds for better concentration.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <h4>Smart Dashboard</h4>
+                                <p>Visualize your tasks, deadlines, and study sessions in an intuitive calendar view.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-file-upload"></i>
+                                </div>
+                                <h4>Resource Manager</h4>
+                                <p>Upload, organize, and tag study materials for easy access across all your devices.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-user-cog"></i>
+                                </div>
+                                <h4>Personalized Settings</h4>
+                                <p>Customize your experience with light/dark mode and notification preferences.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page-container">
+            <h2 class="section-title">Study Dashboard</h2>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="calendar">
+                        <div class="calendar-header">
+                            <h4>October 2023</h4>
+                            <div>
+                                <button class="btn btn-secondary btn-sm me-2" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                                <button class="btn btn-secondary btn-sm" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-day-header">Sun</div>
+                            <div class="calendar-day-header">Mon</div>
+                            <div class="calendar-day-header">Tue</div>
+                            <div class="calendar-day-header">Wed</div>
+                            <div class="calendar-day-header">Thu</div>
+                            <div class="calendar-day-header">Fri</div>
+                            <div class="calendar-day-header">Sat</div>
+                            
+                            <!-- Calendar days will be generated by JavaScript -->
+                            <div id="calendar-days"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card p-3 mb-4">
+                        <h4 class="mb-3">Quick Stats</h4>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Study Hours:</span>
+                            <strong>24.5 hrs</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Tasks Completed:</span>
+                            <strong>18/25</strong>
+                        </div>
+                        <div class="progress mb-1" style="height: 8px;">
+                            <div class="progress-bar gold-gradient" role="progressbar" style="width: 72%"></div>
+                        </div>
+                        <small>Overall Progress: 72%</small>
+                    </div>
+                    
+                    <div class="card p-3">
+                        <h4 class="mb-3">Subject Progress</h4>
+                        <div class="progress-summary">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Mathematics</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Computer Science</span>
+                                    <span>80%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Physics</span>
+                                    <span>45%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>English Literature</span>
+                                    <span>70%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card p-3">
+                        <h4 class="mb-3">Upcoming Deadlines</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Subject</th>
+                                        <th>Due Date</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deadlines-table">
+                                    <!-- Deadlines will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Planner Page -->
+        <div id="schedule-page" class="page-container">
+            <h2 class="section-title">AI-Powered Schedule Planner</h2>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="schedule-form">
+                        <h4 class="mb-4">Input Your Study Details</h4>
+                        <form id="scheduleForm">
+                            <div class="mb-3">
+                                <label for="courseName" class="form-label">Course/Subject</label>
+                                <input type="text" class="form-control" id="courseName" placeholder="e.g., Calculus, Computer Science" required>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="assignmentType" class="form-label">Task Type</label>
+                                    <select class="form-select" id="assignmentType">
+                                        <option value="assignment">Assignment</option>
+                                        <option value="exam">Exam</option>
+                                        <option value="project">Project</option>
+                                        <option value="reading">Reading</option>
+                                        <option value="review">Review</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="priority" class="form-label">Priority</label>
+                                    <select class="form-select" id="priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="dueDate" class="form-label">Due Date</label>
+                                    <input type="date" class="form-control" id="dueDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="studyHours" class="form-label">Estimated Study Hours</label>
+                                    <input type="number" class="form-control" id="studyHours" min="1" max="50" value="5" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="preferredTimes" class="form-label">Preferred Study Times</label>
+                                <select class="form-select" id="preferredTimes" multiple>
+                                    <option value="morning">Morning (6am-12pm)</option>
+                                    <option value="afternoon">Afternoon (12pm-6pm)</option>
+                                    <option value="evening">Evening (6pm-10pm)</option>
+                                    <option value="night">Night (10pm-2am)</option>
+                                </select>
+                                <small class="text-muted">Hold Ctrl/Cmd to select multiple options</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Additional Notes</label>
+                                <textarea class="form-control" id="notes" rows="3" placeholder="Any specific requirements or details..."></textarea>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" id="generateScheduleBtn">
+                                    <i class="fas fa-robot me-2"></i> Generate AI Schedule
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card p-3 h-100">
+                        <h4 class="mb-4">Your Study Schedule</h4>
+                        <p class="text-muted mb-4">Drag and drop items to rearrange your schedule</p>
+                        
+                        <div id="scheduleItems">
+                            <!-- Schedule items will be added here -->
+                            <div class="schedule-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <h6>Math Assignment Review</h6>
+                                    <small class="text-muted">2 hrs</small>
+                                </div>
+                                <p class="mb-1">Calculus problems - Chapter 5</p>
+                                <div class="d-flex justify-content-between">
+                                    <small><i class="fas fa-calendar me-1"></i> Mon, 9:00 AM - 11:00 AM</small>
+                                    <span class="badge bg-warning text-dark">Medium</span>
+                                </div>
+                            </div>
+                            
+                            <div class="schedule-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <h6>CS Project Work</h6>
+                                    <small class="text-muted">3 hrs</small>
+                                </div>
+                                <p class="mb-1">Database design implementation</p>
+                                <div class="d-flex justify-content-between">
+                                    <small><i class="fas fa-calendar me-1"></i> Tue, 2:00 PM - 5:00 PM</small>
+                                    <span class="badge bg-danger">High</span>
+                                </div>
+                            </div>
+                            
+                            <div class="schedule-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <h6>Physics Reading</h6>
+                                    <small class="text-muted">1.5 hrs</small>
+                                </div>
+                                <p class="mb-1">Quantum mechanics principles</p>
+                                <div class="d-flex justify-content-between">
+                                    <small><i class="fas fa-calendar me-1"></i> Wed, 6:00 PM - 7:30 PM</small>
+                                    <span class="badge bg-success">Low</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-top">
+                            <button class="btn btn-secondary w-100" id="clearScheduleBtn">
+                                <i class="fas fa-trash me-2"></i> Clear Schedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card p-4">
+                        <h4 class="mb-3">AI Schedule Suggestions</h4>
+                        <div id="aiSuggestions">
+                            <p class="text-muted">Enter your study details and click "Generate AI Schedule" to get personalized suggestions powered by AI.</p>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-primary" id="loadDemoSuggestions">
+                                <i class="fas fa-magic me-2"></i> Load Demo AI Suggestions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Focus Timer Page -->
+        <div id="focus-page" class="page-container">
+            <h2 class="section-title">Focus Timer</h2>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="timer-container">
+                        <h4 class="mb-3">Pomodoro Timer</h4>
+                        <div class="timer-display" id="timerDisplay">25:00</div>
+                        
+                        <div class="timer-controls">
+                            <button class="btn btn-primary btn-lg" id="startTimerBtn">
+                                <i class="fas fa-play me-2"></i> Start
+                            </button>
+                            <button class="btn btn-secondary btn-lg" id="pauseTimerBtn" disabled>
+                                <i class="fas fa-pause me-2"></i> Pause
+                            </button>
+                            <button class="btn btn-secondary btn-lg" id="resetTimerBtn">
+                                <i class="fas fa-redo me-2"></i> Reset
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-light active" id="pomodoroBtn">Pomodoro (25:00)</button>
+                                <button type="button" class="btn btn-outline-light" id="shortBreakBtn">Short Break (5:00)</button>
+                                <button type="button" class="btn btn-outline-light" id="longBreakBtn">Long Break (15:00)</button>
+                            </div>
+                        </div>
+                        
+                        <div class="sound-toggle mt-5">
+                            <span>Ambient Sounds:</span>
+                            <label class="switch">
+                                <input type="checkbox" id="soundToggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span id="soundStatus">Off</span>
+                        </div>
+                        
+                        <div class="mt-3" id="soundOptions" style="display: none;">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-light active" data-sound="rain">Rain</button>
+                                <button type="button" class="btn btn-outline-light" data-sound="waves">Ocean Waves</button>
+                                <button type="button" class="btn btn-outline-light" data-sound="forest">Forest</button>
+                                <button type="button" class="btn btn-outline-light" data-sound="coffee">Coffee Shop</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="subject-tracking">
+                        <h4 class="mb-4">Time Tracking by Subject</h4>
+                        
+                        <div class="mb-4">
+                            <label for="subjectSelect" class="form-label">Select Subject for Current Session:</label>
+                            <select class="form-select" id="subjectSelect">
+                                <option value="mathematics">Mathematics</option>
+                                <option value="computer-science">Computer Science</option>
+                                <option value="physics">Physics</option>
+                                <option value="english">English Literature</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Today's Study Time</h5>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Mathematics:</span>
+                                <span>2.5 hours</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 8px;">
+                                <div class="progress-bar gold-gradient" role="progressbar" style="width: 45%"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Computer Science:</span>
+                                <span>1.8 hours</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 8px;">
+                                <div class="progress-bar gold-gradient" role="progressbar" style="width: 32%"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Physics:</span>
+                                <span>1.2 hours</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 8px;">
+                                <div class="progress-bar gold-gradient" role="progressbar" style="width: 22%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>Session History</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Subject</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Oct 15</td>
+                                            <td>Mathematics</td>
+                                            <td>1.5 hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Oct 14</td>
+                                            <td>Computer Science</td>
+                                            <td>2.0 hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Oct 13</td>
+                                            <td>Physics</td>
+                                            <td>1.0 hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Oct 12</td>
+                                            <td>Mathematics</td>
+                                            <td>2.2 hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Oct 11</td>
+                                            <td>English Literature</td>
+                                            <td>1.5 hrs</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Page -->
+        <div id="resources-page" class="page-container">
+            <h2 class="section-title">Study Resources</h2>
+            
+            <div class="resource-upload">
+                <h4 class="mb-4">Upload New Resource</h4>
+                <form id="uploadForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="resourceName" class="form-label">Resource Name</label>
+                            <input type="text" class="form-control" id="resourceName" placeholder="e.g., Calculus Chapter 5 Notes" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="resourceType" class="form-label">Resource Type</label>
+                            <select class="form-select" id="resourceType" required>
+                                <option value="pdf">PDF</option>
+                                <option value="doc">Document</option>
+                                <option value="image">Image</option>
+                                <option value="video">Video</option>
+                                <option value="link">Link</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="resourceSubject" class="form-label">Subject</label>
+                            <select class="form-select" id="resourceSubject" required>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="computer-science">Computer Science</option>
+                                <option value="physics">Physics</option>
+                                <option value="english">English Literature</option>
+                                <option value="chemistry">Chemistry</option>
+                                <option value="biology">Biology</option>
+                                <option value="history">History</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="resourceFile" class="form-label">Upload File</label>
+                            <input type="file" class="form-control" id="resourceFile">
+                            <small class="text-muted">Leave empty if resource is a link</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="resourceTags" class="form-label">Tags (comma separated)</label>
+                        <input type="text" class="form-control" id="resourceTags" placeholder="e.g., calculus, derivatives, chapter5">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="resourceDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="resourceDescription" rows="3" placeholder="Brief description of the resource..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i> Upload Resource
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4 class="mb-4">Your Resources</h4>
+                    
+                    <div class="row" id="resourcesList">
+                        <!-- Resource cards will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analytics-page" class="page-container">
+            <h2 class="section-title">Study Analytics</h2>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <h5>Weekly Study Hours</h5>
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card p-3 h-100">
+                        <h5 class="mb-3">Study Distribution</h5>
+                        <canvas id="subjectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5>Monthly Progress</h5>
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card p-3 h-100">
+                        <h5 class="mb-3">Performance Metrics</h5>
+                        <div class="row text-center">
+                            <div class="col-6 mb-4">
+                                <div class="display-4 text-gold">78%</div>
+                                <small class="text-muted">Task Completion Rate</small>
+                            </div>
+                            <div class="col-6 mb-4">
+                                <div class="display-4 text-gold">24.5</div>
+                                <small class="text-muted">Avg Study Hours/Week</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="display-4 text-gold">92%</div>
+                                <small class="text-muted">On-Time Submission</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="display-4 text-gold">4.2</div>
+                                <small class="text-muted">Avg Focus Sessions/Day</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-top">
+                            <h6>Study Trends</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-arrow-up text-success me-2"></i> Math study time increased by 15% this week</li>
+                                <li class="mb-2"><i class="fas fa-arrow-down text-warning me-2"></i> Evening study sessions decreased by 10%</li>
+                                <li><i class="fas fa-arrow-up text-success me-2"></i> Average focus duration increased to 42 minutes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profile-page" class="page-container">
+            <h2 class="section-title">Profile & Settings</h2>
+            
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card profile-card">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b786d4d9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Profile" class="profile-pic">
+                        <h4>Alex Johnson</h4>
+                        <p class="text-muted">Computer Science Student</p>
+                        <p><i class="fas fa-university me-2"></i> Stanford University</p>
+                        <p><i class="fas fa-envelope me-2"></i> alex.johnson@example.com</p>
+                        <button class="btn btn-primary mt-3">Edit Profile</button>
+                    </div>
+                </div>
+                
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <h4 class="mb-4">Account Settings</h4>
+                        
+                        <form id="profileForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" value="Alex" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" value="Johnson" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" value="alex.johnson@example.com" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="university" class="form-label">University/Institution</label>
+                                <input type="text" class="form-control" id="university" value="Stanford University" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="studyField" class="form-label">Field of Study</label>
+                                <input type="text" class="form-control" id="studyField" value="Computer Science" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" rows="3">Passionate computer science student specializing in AI and machine learning. Always looking for ways to optimize my study routine and improve productivity.</textarea>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3">Notification Preferences</h5>
+                        <div class="settings-option">
+                            <div>
+                                <h6>Email Notifications</h6>
+                                <p class="text-muted mb-0">Receive study reminders and updates via email</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-option">
+                            <div>
+                                <h6>Assignment Reminders</h6>
+                                <p class="text-muted mb-0">Get notified about upcoming deadlines</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="assignmentReminders" checked>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-option">
+                            <div>
+                                <h6>Study Session Alerts</h6>
+                                <p class="text-muted mb-0">Reminders for planned study sessions</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="sessionAlerts">
+                            </div>
+                        </div>
+                        
+                        <div class="settings-option">
+                            <div>
+                                <h6>Weekly Progress Reports</h6>
+                                <p class="text-muted mb-0">Receive a summary of your weekly study activity</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="progressReports" checked>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="settings-option">
+                            <div>
+                                <h5>Theme Selection</h5>
+                                <p class="text-muted mb-0">Choose between light and dark mode</p>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="theme" id="lightTheme" value="light">
+                                <label class="form-check-label" for="lightTheme">Light</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="theme" id="darkTheme" value="dark" checked>
+                                <label class="form-check-label" for="darkTheme">Dark</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5><i class="fas fa-graduation-cap me-2"></i> StudySmart</h5>
+                    <p class="mt-3">An AI-powered smart study planner designed to help students organize their coursework, manage deadlines, and optimize study schedules for maximum productivity.</p>
+                </div>
+                <div class="col-lg-2 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" data-page="home">Home</a></li>
+                        <li class="mb-2"><a href="#" data-page="dashboard">Dashboard</a></li>
+                        <li class="mb-2"><a href="#" data-page="schedule">Schedule Planner</a></li>
+                        <li class="mb-2"><a href="#" data-page="focus">Focus Timer</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 mb-4">
+                    <h5>Features</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" data-page="resources">Resources</a></li>
+                        <li class="mb-2"><a href="#" data-page="analytics">Analytics</a></li>
+                        <li class="mb-2"><a href="#" data-page="profile">Profile</a></li>
+                        <li class="mb-2"><a href="#" data-page="home">AI Scheduling</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5>Contact & Support</h5>
+                    <p class="mt-3"><i class="fas fa-envelope me-2"></i> support@studysmart.com</p>
+                    <p><i class="fas fa-phone me-2"></i> +1 (555) 123-4567</p>
+                    <div class="mt-4">
+                        <a href="#" class="me-3 text-decoration-none"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="me-3 text-decoration-none"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="me-3 text-decoration-none"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="fab fa-linkedin fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 StudySmart. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskForm">
+                        <div class="mb-3">
+                            <label for="taskTitle" class="form-label">Task Title</label>
+                            <input type="text" class="form-control" id="taskTitle" placeholder="e.g., Complete Math Assignment" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskSubject" class="form-label">Subject</label>
+                            <select class="form-select" id="taskSubject" required>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="computer-science">Computer Science</option>
+                                <option value="physics">Physics</option>
+                                <option value="english">English Literature</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taskDueDate" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="taskDueDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="taskPriority" class="form-label">Priority</label>
+                                <select class="form-select" id="taskPriority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="taskDescription" rows="3" placeholder="Task details..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveTaskBtn">Save Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Application State
+        const state = {
+            currentPage: 'home',
+            isDarkMode: true,
+            timerInterval: null,
+            timerSeconds: 1500, // 25 minutes in seconds
+            timerRunning: false,
+            timerMode: 'pomodoro',
+            resources: [
+                {
+                    id: 1,
+                    name: 'Calculus Chapter 5 Notes',
+                    type: 'pdf',
+                    subject: 'mathematics',
+                    tags: ['calculus', 'derivatives', 'chapter5'],
+                    description: 'Detailed notes on derivatives and their applications',
+                    date: '2023-10-10'
+                },
+                {
+                    id: 2,
+                    name: 'Database Design Principles',
+                    type: 'doc',
+                    subject: 'computer-science',
+                    tags: ['database', 'design', 'sql'],
+                    description: 'Guide to relational database design and normalization',
+                    date: '2023-10-05'
+                },
+                {
+                    id: 3,
+                    name: 'Quantum Mechanics Overview',
+                    type: 'link',
+                    subject: 'physics',
+                    tags: ['physics', 'quantum', 'mechanics'],
+                    description: 'Online resource explaining quantum mechanics fundamentals',
+                    date: '2023-10-01'
+                }
+            ],
+            tasks: [
+                { id: 1, title: 'Math Assignment', subject: 'mathematics', dueDate: '2023-10-20', priority: 'high', status: 'pending' },
+                { id: 2, title: 'CS Project Phase 1', subject: 'computer-science', dueDate: '2023-10-22', priority: 'high', status: 'pending' },
+                { id: 3, title: 'Physics Lab Report', subject: 'physics', dueDate: '2023-10-18', priority: 'medium', status: 'completed' },
+                { id: 4, title: 'English Essay Draft', subject: 'english', dueDate: '2023-10-25', priority: 'medium', status: 'pending' },
+                { id: 5, title: 'Chemistry Quiz Prep', subject: 'chemistry', dueDate: '2023-10-17', priority: 'low', status: 'pending' }
+            ]
+        };
+
+        // DOM Elements
+        const pageContainers = document.querySelectorAll('.page-container');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeRadios = document.querySelectorAll('input[name="theme"]');
+        const quickAddBtn = document.getElementById('quickAddBtn');
+        const saveTaskBtn = document.getElementById('saveTaskBtn');
+        const calendarDays = document.getElementById('calendar-days');
+        const deadlinesTable = document.getElementById('deadlines-table');
+        const scheduleItems = document.getElementById('scheduleItems');
+        const clearScheduleBtn = document.getElementById('clearScheduleBtn');
+        const generateScheduleBtn = document.getElementById('generateScheduleBtn');
+        const loadDemoSuggestions = document.getElementById('loadDemoSuggestions');
+        const startTimerBtn = document.getElementById('startTimerBtn');
+        const pauseTimerBtn = document.getElementById('pauseTimerBtn');
+        const resetTimerBtn = document.getElementById('resetTimerBtn');
+        const pomodoroBtn = document.getElementById('pomodoroBtn');
+        const shortBreakBtn = document.getElementById('shortBreakBtn');
+        const longBreakBtn = document.getElementById('longBreakBtn');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const soundToggle = document.getElementById('soundToggle');
+        const soundOptions = document.getElementById('soundOptions');
+        const soundStatus = document.getElementById('soundStatus');
+        const uploadForm = document.getElementById('uploadForm');
+        const resourcesList = document.getElementById('resourcesList');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const tryDemoBtn = document.getElementById('tryDemoBtn');
+
+        // Initialize the application
+        function init() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize dark mode
+            updateTheme();
+            
+            // Initialize calendar
+            generateCalendar();
+            
+            // Initialize deadlines table
+            populateDeadlinesTable();
+            
+            // Initialize resources list
+            renderResources();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Set current date for due date inputs
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dueDate').value = today;
+            document.getElementById('taskDueDate').value = today;
+            
+            // Make schedule items draggable
+            makeScheduleItemsDraggable();
+            
+            // Set active nav link based on current page
+            setActiveNavLink();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Navigation
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    navigateToPage(page);
+                });
+            });
+
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            themeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'dark') {
+                        enableDarkMode();
+                    } else {
+                        enableLightMode();
+                    }
+                });
+            });
+
+            // Quick add task
+            saveTaskBtn.addEventListener('click', addNewTask);
+
+            // Calendar navigation
+            document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
+            document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
+
+            // Schedule planner
+            clearScheduleBtn.addEventListener('click', clearSchedule);
+            generateScheduleBtn.addEventListener('click', generateAISchedule);
+            loadDemoSuggestions.addEventListener('click', loadDemoAISuggestions);
+
+            // Focus timer
+            startTimerBtn.addEventListener('click', startTimer);
+            pauseTimerBtn.addEventListener('click', pauseTimer);
+            resetTimerBtn.addEventListener('click', resetTimer);
+            pomodoroBtn.addEventListener('click', () => setTimerMode('pomodoro'));
+            shortBreakBtn.addEventListener('click', () => setTimerMode('shortBreak'));
+            longBreakBtn.addEventListener('click', () => setTimerMode('longBreak'));
+            soundToggle.addEventListener('change', toggleAmbientSound);
+            
+            // Sound options
+            document.querySelectorAll('[data-sound]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('[data-sound]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Resources
+            uploadForm.addEventListener('submit', handleResourceUpload);
+
+            // Landing page buttons
+            signUpBtn.addEventListener('click', () => {
+                alert('Sign up functionality would be implemented in a full application. For now, you can explore all features in demo mode.');
+                navigateToPage('dashboard');
+            });
+            
+            tryDemoBtn.addEventListener('click', () => {
+                alert('Demo mode activated! You can explore all StudySmart features.');
+                navigateToPage('dashboard');
+            });
+        }
+
+        // Navigation between pages
+        function navigateToPage(page) {
+            // Hide all pages
+            pageContainers.forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(`${page}-page`).classList.add('active');
+            
+            // Update state
+            state.currentPage = page;
+            
+            // Update active nav link
+            setActiveNavLink();
+            
+            // Special initialization for specific pages
+            if (page === 'dashboard') {
+                generateCalendar();
+            } else if (page === 'analytics') {
+                initializeCharts();
+            }
+        }
+
+        // Set active navigation link
+        function setActiveNavLink() {
+            navLinks.forEach(link => {
+                const page = link.getAttribute('data-page');
+                if (page === state.currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        // Theme management
+        function toggleTheme() {
+            state.isDarkMode = !state.isDarkMode;
+            updateTheme();
+        }
+
+        function updateTheme() {
+            if (state.isDarkMode) {
+                enableDarkMode();
+                // Update radio buttons
+                document.getElementById('darkTheme').checked = true;
+            } else {
+                enableLightMode();
+                // Update radio buttons
+                document.getElementById('lightTheme').checked = true;
+            }
+        }
+
+        function enableDarkMode() {
+            document.body.classList.add('dark-mode');
+            state.isDarkMode = true;
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        function enableLightMode() {
+            document.body.classList.remove('dark-mode');
+            state.isDarkMode = false;
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+
+        // Calendar functions
+        function generateCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+            
+            calendarDays.innerHTML = '';
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < startingDay; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.classList.add('calendar-day');
+                calendarDays.appendChild(emptyDiv);
+            }
+            
+            // Add cells for each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('calendar-day');
+                dayDiv.innerHTML = `<strong>${day}</strong>`;
+                
+                // Add sample events for certain days
+                if (day === 15 || day === 20 || day === 25) {
+                    const event = document.createElement('div');
+                    event.classList.add('calendar-event');
+                    event.textContent = day === 15 ? 'Math Exam' : day === 20 ? 'CS Project' : 'Physics Lab';
+                    dayDiv.appendChild(event);
+                }
+                
+                // Highlight today
+                if (day === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+                    dayDiv.style.border = '2px solid var(--accent-gold)';
+                }
+                
+                calendarDays.appendChild(dayDiv);
+            }
+        }
+
+        function changeMonth(direction) {
+            // In a full implementation, this would change the month
+            alert(`Calendar navigation would change the month by ${direction} month(s) in a full implementation.`);
+        }
+
+        // Tasks and deadlines
+        function populateDeadlinesTable() {
+            deadlinesTable.innerHTML = '';
+            
+            state.tasks.forEach(task => {
+                const row = document.createElement('tr');
+                
+                // Priority badge color
+                let priorityClass = '';
+                switch(task.priority) {
+                    case 'high': priorityClass = 'bg-danger'; break;
+                    case 'medium': priorityClass = 'bg-warning text-dark'; break;
+                    case 'low': priorityClass = 'bg-success'; break;
+                }
+                
+                // Status badge
+                let statusBadge = task.status === 'completed' 
+                    ? '<span class="badge bg-success">Completed</span>'
+                    : '<span class="badge bg-secondary">Pending</span>';
+                
+                row.innerHTML = `
+                    <td>${task.title}</td>
+                    <td>${task.subject}</td>
+                    <td>${task.dueDate}</td>
+                    <td><span class="badge ${priorityClass}">${task.priority}</span></td>
+                    <td>${statusBadge}</td>
+                `;
+                
+                deadlinesTable.appendChild(row);
+            });
+        }
+
+        function addNewTask() {
+            const title = document.getElementById('taskTitle').value;
+            const subject = document.getElementById('taskSubject').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const priority = document.getElementById('taskPriority').value;
+            
+            if (!title || !dueDate) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Add task to state
+            const newTask = {
+                id: state.tasks.length + 1,
+                title,
+                subject,
+                dueDate,
+                priority,
+                status: 'pending'
+            };
+            
+            state.tasks.push(newTask);
+            
+            // Update table
+            populateDeadlinesTable();
+            
+            // Close modal and reset form
+            bootstrap.Modal.getInstance(document.getElementById('addTaskModal')).hide();
+            document.getElementById('taskForm').reset();
+            
+            // Show confirmation
+            alert('Task added successfully!');
+        }
+
+        // Schedule planner functions
+        function makeScheduleItemsDraggable() {
+            const items = scheduleItems.querySelectorAll('.schedule-item');
+            
+            items.forEach(item => {
+                item.setAttribute('draggable', 'true');
+                
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.id);
+                    item.classList.add('dragging');
+                });
+                
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                });
+            });
+            
+            scheduleItems.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingItem = document.querySelector('.dragging');
+                const siblings = [...scheduleItems.querySelectorAll('.schedule-item:not(.dragging)')];
+                
+                const nextSibling = siblings.find(sibling => {
+                    return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+                });
+                
+                scheduleItems.insertBefore(draggingItem, nextSibling);
+            });
+        }
+
+        function clearSchedule() {
+            if (confirm('Are you sure you want to clear your schedule?')) {
+                scheduleItems.innerHTML = '<p class="text-muted">Your schedule is empty. Add items using the form on the left.</p>';
+            }
+        }
+
+        function generateAISchedule() {
+            // This would normally call the Gemini API
+            // For demo purposes, we'll simulate an AI response
+            
+            const course = document.getElementById('courseName').value;
+            const taskType = document.getElementById('assignmentType').value;
+            const dueDate = document.getElementById('dueDate').value;
+            const hours = document.getElementById('studyHours').value;
+            
+            if (!course || !dueDate || !hours) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Show loading state
+            generateScheduleBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Generating...';
+            generateScheduleBtn.disabled = true;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Create new schedule item
+                const scheduleItem = document.createElement('div');
+                scheduleItem.className = 'schedule-item mb-3';
+                scheduleItem.setAttribute('draggable', 'true');
+                
+                // Priority badge
+                const priority = document.getElementById('priority').value;
+                let priorityBadge = '';
+                switch(priority) {
+                    case 'high': priorityBadge = '<span class="badge bg-danger">High</span>'; break;
+                    case 'medium': priorityBadge = '<span class="badge bg-warning text-dark">Medium</span>'; break;
+                    case 'low': priorityBadge = '<span class="badge bg-success">Low</span>'; break;
+                    case 'urgent': priorityBadge = '<span class="badge bg-danger">Urgent</span>'; break;
+                }
+                
+                // Format due date
+                const dueDateObj = new Date(dueDate);
+                const formattedDate = dueDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                
+                scheduleItem.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <h6>${course} ${taskType.charAt(0).toUpperCase() + taskType.slice(1)}</h6>
+                        <small class="text-muted">${hours} hrs</small>
+                    </div>
+                    <p class="mb-1">${document.getElementById('notes').value || 'No additional notes'}</p>
+                    <div class="d-flex justify-content-between">
+                        <small><i class="fas fa-calendar me-1"></i> ${formattedDate}</small>
+                        ${priorityBadge}
+                    </div>
+                `;
+                
+                // Add to schedule
+                if (scheduleItems.querySelector('.text-muted')) {
+                    scheduleItems.innerHTML = '';
+                }
+                scheduleItems.appendChild(scheduleItem);
+                
+                // Make draggable
+                makeScheduleItemsDraggable();
+                
+                // Show AI suggestions
+                showAISuggestions(course, taskType, hours, priority);
+                
+                // Reset button
+                generateScheduleBtn.innerHTML = '<i class="fas fa-robot me-2"></i> Generate AI Schedule';
+                generateScheduleBtn.disabled = false;
+            }, 1500);
+        }
+
+        function showAISuggestions(course, taskType, hours, priority) {
+            const suggestions = document.getElementById('aiSuggestions');
+            
+            // AI-generated suggestions based on input
+            const suggestionsHTML = `
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb me-2"></i> AI Suggestions for Your Study Plan</h6>
+                    <hr>
+                    <ul>
+                        <li>Based on the ${priority} priority, consider starting this task at least 3 days before the due date.</li>
+                        <li>Break down the ${hours} hours into ${Math.ceil(hours/2)} sessions of 2 hours each for better retention.</li>
+                        <li>For ${course}, try to study during your peak focus hours (morning is recommended for technical subjects).</li>
+                        <li>Use the Pomodoro technique (25 min focus, 5 min break) to maintain concentration during study sessions.</li>
+                        <li>Consider reviewing related materials from previous chapters to build stronger connections.</li>
+                    </ul>
+                    <p class="mb-0"><strong>Recommended study schedule:</strong> 2 hours daily for ${Math.ceil(hours/2)} days, with a review session on the last day.</p>
+                </div>
+            `;
+            
+            suggestions.innerHTML = suggestionsHTML;
+        }
+
+        function loadDemoAISuggestions() {
+            const suggestions = document.getElementById('aiSuggestions');
+            
+            suggestions.innerHTML = `
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-robot me-2"></i> AI-Powered Study Schedule Suggestions</h6>
+                    <hr>
+                    <p>Based on your courses and deadlines, here's an optimized study plan generated by AI:</p>
+                    
+                    <h6 class="mt-3">Week 1 Focus:</h6>
+                    <ul>
+                        <li><strong>Mathematics (Calculus):</strong> 2 hours daily, focusing on derivative applications</li>
+                        <li><strong>Computer Science:</strong> 1.5 hours daily, database design and SQL queries</li>
+                        <li><strong>Physics:</strong> 1 hour daily, quantum mechanics principles</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Study Strategies:</h6>
+                    <ul>
+                        <li>Use spaced repetition for formula memorization</li>
+                        <li>Practice active recall with past exam questions</li>
+                        <li>Schedule difficult topics during your peak energy times</li>
+                        <li>Take regular breaks to avoid burnout (5 min every 25 min)</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Exam Preparation Timeline:</h6>
+                    <ul>
+                        <li>3 weeks before: Complete all reading materials</li>
+                        <li>2 weeks before: Practice problems and past papers</li>
+                        <li>1 week before: Review weak areas and create summary sheets</li>
+                        <li>2 days before: Final review and relaxation</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Focus timer functions
+        function startTimer() {
+            if (state.timerRunning) return;
+            
+            state.timerRunning = true;
+            startTimerBtn.disabled = true;
+            pauseTimerBtn.disabled = false;
+            
+            state.timerInterval = setInterval(() => {
+                state.timerSeconds--;
+                
+                // Update display
+                updateTimerDisplay();
+                
+                // Check if timer reached zero
+                if (state.timerSeconds <= 0) {
+                    clearInterval(state.timerInterval);
+                    state.timerRunning = false;
+                    startTimerBtn.disabled = false;
+                    pauseTimerBtn.disabled = true;
+                    
+                    // Play sound notification
+                    playTimerCompleteSound();
+                    
+                    // Show notification
+                    alert('Timer completed! Time for a break.');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (!state.timerRunning) return;
+            
+            clearInterval(state.timerInterval);
+            state.timerRunning = false;
+            startTimerBtn.disabled = false;
+            pauseTimerBtn.disabled = true;
+        }
+
+        function resetTimer() {
+            clearInterval(state.timerInterval);
+            state.timerRunning = false;
+            startTimerBtn.disabled = false;
+            pauseTimerBtn.disabled = true;
+            
+            // Reset to current mode's default time
+            switch(state.timerMode) {
+                case 'pomodoro':
+                    state.timerSeconds = 1500; // 25 minutes
+                    break;
+                case 'shortBreak':
+                    state.timerSeconds = 300; // 5 minutes
+                    break;
+                case 'longBreak':
+                    state.timerSeconds = 900; // 15 minutes
+                    break;
+            }
+            
+            updateTimerDisplay();
+        }
+
+        function setTimerMode(mode) {
+            // Update button states
+            pomodoroBtn.classList.remove('active');
+            shortBreakBtn.classList.remove('active');
+            longBreakBtn.classList.remove('active');
+            
+            switch(mode) {
+                case 'pomodoro':
+                    pomodoroBtn.classList.add('active');
+                    state.timerSeconds = 1500; // 25 minutes
+                    state.timerMode = 'pomodoro';
+                    break;
+                case 'shortBreak':
+                    shortBreakBtn.classList.add('active');
+                    state.timerSeconds = 300; // 5 minutes
+                    state.timerMode = 'shortBreak';
+                    break;
+                case 'longBreak':
+                    longBreakBtn.classList.add('active');
+                    state.timerSeconds = 900; // 15 minutes
+                    state.timerMode = 'longBreak';
+                    break;
+            }
+            
+            // Reset timer if not running
+            if (!state.timerRunning) {
+                resetTimer();
+            }
+            
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(state.timerSeconds / 60);
+            const seconds = state.timerSeconds % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function playTimerCompleteSound() {
+            // In a real implementation, this would play a sound
+            console.log('Timer complete sound played');
+        }
+
+        function toggleAmbientSound() {
+            const isChecked = soundToggle.checked;
+            soundStatus.textContent = isChecked ? 'On' : 'Off';
+            soundOptions.style.display = isChecked ? 'block' : 'none';
+            
+            if (isChecked) {
+                console.log('Ambient sounds enabled');
+            } else {
+                console.log('Ambient sounds disabled');
+            }
+        }
+
+        // Resources functions
+        function renderResources() {
+            resourcesList.innerHTML = '';
+            
+            state.resources.forEach(resource => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-4';
+                
+                // Icon based on type
+                let icon = 'file';
+                switch(resource.type) {
+                    case 'pdf': icon = 'file-pdf'; break;
+                    case 'doc': icon = 'file-word'; break;
+                    case 'image': icon = 'file-image'; break;
+                    case 'video': icon = 'file-video'; break;
+                    case 'link': icon = 'link'; break;
+                }
+                
+                // Tags HTML
+                let tagsHTML = '';
+                resource.tags.forEach(tag => {
+                    tagsHTML += `<span class="tag">${tag}</span>`;
+                });
+                
+                col.innerHTML = `
+                    <div class="card resource-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title">${resource.name}</h5>
+                                <i class="fas fa-${icon} fa-2x text-gold"></i>
+                            </div>
+                            <p class="card-text">${resource.description}</p>
+                            <div class="mb-3">
+                                ${tagsHTML}
+                            </div>
+                            <div class="resource-actions">
+                                <small class="text-muted">${resource.date}</small>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="downloadResource(${resource.id})">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteResource(${resource.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                resourcesList.appendChild(col);
+            });
+        }
+
+        function handleResourceUpload(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('resourceName').value;
+            const type = document.getElementById('resourceType').value;
+            const subject = document.getElementById('resourceSubject').value;
+            const tags = document.getElementById('resourceTags').value.split(',').map(tag => tag.trim());
+            const description = document.getElementById('resourceDescription').value;
+            
+            if (!name) {
+                alert('Please enter a resource name');
+                return;
+            }
+            
+            // Create new resource
+            const newResource = {
+                id: state.resources.length + 1,
+                name,
+                type,
+                subject,
+                tags: tags.filter(tag => tag !== ''),
+                description,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            // Add to state
+            state.resources.push(newResource);
+            
+            // Re-render resources
+            renderResources();
+            
+            // Reset form
+            uploadForm.reset();
+            
+            // Show confirmation
+            alert('Resource added successfully!');
+        }
+
+        // These functions would be implemented in a full application
+        function downloadResource(id) {
+            alert(`Resource ${id} download would start in a full implementation.`);
+        }
+
+        function deleteResource(id) {
+            if (confirm('Are you sure you want to delete this resource?')) {
+                state.resources = state.resources.filter(resource => resource.id !== id);
+                renderResources();
+                alert('Resource deleted successfully!');
+            }
+        }
+
+        // Charts initialization
+        function initializeCharts() {
+            // Weekly Study Hours Chart
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(weeklyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Study Hours',
+                        data: [3.5, 4.2, 2.8, 5.1, 3.8, 2.5, 4.0],
+                        backgroundColor: '#FFD700',
+                        borderColor: '#FFEC8B',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Hours'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Subject Distribution Chart
+            const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+            new Chart(subjectCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mathematics', 'Computer Science', 'Physics', 'English', 'Other'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            '#FFD700',
+                            '#FFEC8B',
+                            '#FFC300',
+                            '#FFA500',
+                            '#FF8C00'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Progress Chart
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [
+                        {
+                            label: 'Study Hours',
+                            data: [18, 22, 24, 26],
+                            borderColor: '#FFD700',
+                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Tasks Completed',
+                            data: [12, 15, 18, 20],
+                            borderColor: '#121212',
+                            backgroundColor: 'rgba(18, 18, 18, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
