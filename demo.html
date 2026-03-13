@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex · 智能营销顾问</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0c0e;--sur:#141416;--card:#1c1c1f;--bor:#282828;
+  --gold:#C9A84C;--gold2:#F0D080;--gdim:rgba(201,168,76,.13);--gring:rgba(201,168,76,.4);
+  --w:#efefef;--g:#888;--g2:#bbb;--red:#e05555;--green:#48c78e;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-family:'Noto Sans SC','Poppins',sans-serif}
+
+/* ── APP SHELL ── */
+#app{display:flex;height:100vh}
+
+/* ── SIDEBAR ── */
+.sb{width:255px;background:var(--sur);border-right:1px solid var(--bor);display:flex;flex-direction:column;flex-shrink:0}
+@media(max-width:680px){.sb{display:none}}
+
+.sb-brand{padding:1rem 1.1rem .8rem;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:.7rem}
+.sb-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8a5f0a);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#000;font-family:'Poppins',sans-serif;flex-shrink:0}
+.sb-name{font-size:.86rem;font-weight:700;color:var(--gold);line-height:1.2}
+.sb-title{font-size:.62rem;color:var(--g)}
+
+.sb-sec{padding:.8rem 1.1rem;border-bottom:1px solid var(--bor)}
+.sb-lbl{font-size:.62rem;color:var(--gold);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:.55rem;display:flex;align-items:center;gap:.35rem}
+
+/* Stages */
+.stages{display:flex;flex-direction:column;gap:.28rem}
+.stg{display:flex;align-items:center;gap:.5rem;padding:.32rem .5rem;border-radius:7px;font-size:.72rem;color:var(--g);transition:all .35s}
+.stg.active{background:var(--gdim);color:var(--gold2);border:1px solid rgba(201,168,76,.3)}
+.stg.done{color:#444}
+.stg .sd{width:17px;height:17px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0}
+.stg.active .sd{background:var(--gold);border-color:var(--gold);color:#000}
+
+/* Voice */
+.vc-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.vc-lbl{font-size:.73rem;color:var(--g2)}
+.tog{position:relative;width:34px;height:19px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.ts{position:absolute;inset:0;background:var(--bor);border-radius:20px;cursor:pointer;transition:.25s}
+.ts:before{content:'';position:absolute;width:13px;height:13px;left:3px;top:3px;background:var(--g);border-radius:50%;transition:.25s}
+.tog input:checked+.ts{background:var(--gdim);border:1px solid var(--gold)}
+.tog input:checked+.ts:before{transform:translateX(15px);background:var(--gold)}
+.rs{-webkit-appearance:none;width:100%;height:3px;background:var(--bor);border-radius:2px;outline:none;margin:.28rem 0 .55rem}
+.rs::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);cursor:pointer}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.stat{background:var(--card);border:1px solid var(--bor);border-radius:8px;padding:.5rem .65rem;text-align:center}
+.sv{font-size:1.1rem;font-weight:700;color:var(--gold);font-family:'Poppins',sans-serif}
+.sl{font-size:.6rem;color:var(--g);margin-top:1px}
+
+.newbtn{margin:auto 1.1rem 1.1rem;padding:.5rem;background:transparent;border:1px solid var(--bor);color:var(--g);border-radius:8px;cursor:pointer;font-size:.73rem;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.45rem;transition:all .2s}
+.newbtn:hover{border-color:var(--gold);color:var(--gold);background:var(--gdim)}
+
+/* ── CHAT ── */
+.chat{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+.hd{background:var(--sur);border-bottom:1px solid var(--bor);padding:.8rem 1.15rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hd-l{display:flex;align-items:center;gap:.65rem}
+.hd-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8a5f0a);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#000;font-family:'Poppins',sans-serif;position:relative}
+.online{position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--sur)}
+.hd-name{font-size:.87rem;font-weight:700}
+.hd-sub{font-size:.63rem;color:var(--g)}
+.hd-r{display:flex;align-items:center;gap:.55rem}
+.hd-status{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--g2)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);flex-shrink:0}
+.dot.r{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot.g{background:var(--gold);box-shadow:0 0 5px var(--gold)}
+.hbtn{background:none;border:1px solid var(--bor);color:var(--g);width:32px;height:32px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.78rem;transition:all .2s}
+.hbtn:hover{color:var(--gold);border-color:var(--gold);background:var(--gdim)}
+
+/* Errbar */
+.eb{display:none;background:rgba(224,85,85,.1);border-bottom:1px solid rgba(224,85,85,.3);color:#fc8181;padding:.45rem 1rem;font-size:.74rem;text-align:center}
+.eb.on{display:block}
+
+/* Messages */
+.msgs{flex:1;overflow-y:auto;padding:1.1rem 1.15rem .4rem;display:flex;flex-direction:column;gap:.9rem;scroll-behavior:smooth}
+.msgs::-webkit-scrollbar{width:3px}
+.msgs::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
+
+/* Welcome */
+.wlc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center;gap:1rem}
+.wav{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8a5f0a);display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:700;color:#000;font-family:'Poppins',sans-serif;box-shadow:0 0 35px var(--gring);animation:apulse 3s ease-in-out infinite}
+@keyframes apulse{0%,100%{box-shadow:0 0 18px var(--gring)}50%{box-shadow:0 0 42px rgba(201,168,76,.55)}}
+.wt{font-size:1.2rem;font-weight:700}
+.wd{font-size:.8rem;color:var(--g);max-width:300px;line-height:1.7}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;max-width:400px}
+.chip{padding:.38rem .85rem;background:var(--card);border:1px solid var(--bor);border-radius:20px;font-size:.74rem;color:var(--g2);cursor:pointer;transition:all .2s;font-family:inherit}
+.chip:hover{border-color:var(--gold);color:var(--gold);background:var(--gdim)}
+
+/* Bubbles */
+.msg{display:flex;gap:.6rem;align-items:flex-start;animation:mi .28s ease;max-width:86%}
+@keyframes mi{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;align-self:flex-end}
+.msg.bot{align-self:flex-start}
+.mav{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+.mav.b{background:linear-gradient(135deg,var(--gold),#8a5f0a);color:#000}
+.mav.u{background:var(--card);border:1px solid var(--bor);color:var(--gold)}
+.bub{padding:.65rem .9rem;border-radius:13px;font-size:.83rem;line-height:1.65;word-break:break-word}
+.msg.bot .bub{background:var(--card);border:1px solid var(--bor);color:var(--g2);border-top-left-radius:4px}
+.msg.user .bub{background:linear-gradient(135deg,var(--gold),#8a5f0a);color:#000;border-top-right-radius:4px;font-weight:500}
+.bub.typing-cur::after{content:'▌';color:var(--gold);animation:bl .6s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
+.mt{font-size:.6rem;color:var(--g);margin-top:3px}
+.msg.user .mt{text-align:right}
+
+/* Typing dots */
+.tdot{display:flex;gap:.55rem;align-items:center}
+.tdots{display:flex;gap:3px}
+.tdots span{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:td 1.15s ease-in-out infinite}
+.tdots span:nth-child(2){animation-delay:.2s}
+.tdots span:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,80%,100%{transform:scale(.55);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* Viz */
+.viz{display:none;align-items:center;justify-content:center;gap:2px;height:32px;margin-bottom:.45rem}
+.viz.on{display:flex}
+.vb{width:2px;border-radius:2px;background:var(--gold);animation:vw 1.1s ease-in-out infinite}
+.vb:nth-child(1){height:7px;animation-delay:0s}.vb:nth-child(2){height:13px;animation-delay:.07s}.vb:nth-child(3){height:20px;animation-delay:.14s}
+.vb:nth-child(4){height:28px;animation-delay:.21s}.vb:nth-child(5){height:32px;animation-delay:.28s}.vb:nth-child(6){height:28px;animation-delay:.35s}
+.vb:nth-child(7){height:20px;animation-delay:.42s}.vb:nth-child(8){height:13px;animation-delay:.49s}.vb:nth-child(9){height:7px;animation-delay:.56s}
+.vb:nth-child(10){height:13px;animation-delay:.63s}.vb:nth-child(11){height:20px;animation-delay:.70s}.vb:nth-child(12){height:28px;animation-delay:.77s}
+@keyframes vw{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+.viz.listen .vb{background:var(--red)}.viz.speak .vb{background:var(--gold2)}
+
+/* Trans */
+.trans{display:none;text-align:center;font-size:.73rem;color:var(--gold);font-style:italic;margin-bottom:.35rem;min-height:1em}
+.trans.on{display:block}
+
+/* Input */
+.inp-area{border-top:1px solid var(--bor);background:var(--sur);padding:.85rem 1.15rem;flex-shrink:0}
+.irow{display:flex;gap:.55rem;align-items:flex-end}
+.vbtn{width:44px;height:44px;border-radius:9px;border:1.5px solid var(--bor);background:var(--card);color:var(--g);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;flex-shrink:0}
+.vbtn:hover{border-color:var(--gold);color:var(--gold)}
+.vbtn.listen{border-color:var(--red);color:var(--red);background:rgba(224,85,85,.1);animation:vbp 1s ease-in-out infinite}
+.vbtn.speak{border-color:var(--gold);color:var(--gold);background:var(--gdim)}
+@keyframes vbp{0%,100%{box-shadow:0 0 0 0 rgba(224,85,85,.4)}50%{box-shadow:0 0 0 6px rgba(224,85,85,0)}}
+.iwrap{flex:1}
+.ti{width:100%;background:var(--card);border:1px solid var(--bor);color:var(--w);border-radius:9px;padding:.65rem .9rem;font-size:.83rem;font-family:inherit;resize:none;outline:none;transition:border-color .2s;min-height:44px;max-height:120px;line-height:1.5}
+.ti:focus{border-color:var(--gold)}
+.ti::placeholder{color:var(--g)}
+.sbtn{width:44px;height:44px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#8a5f0a);border:none;color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;flex-shrink:0}
+.sbtn:hover{transform:scale(1.06);box-shadow:0 0 18px var(--gring)}
+.sbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(70px);background:var(--card);border:1px solid var(--bor);color:var(--w);padding:.5rem 1.1rem;border-radius:7px;font-size:.75rem;z-index:999;transition:transform .3s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--gold);color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-brand">
+    <div class="sb-av">A</div>
+    <div>
+      <div class="sb-name">Alex</div>
+      <div class="sb-title">资深营销顾问 · Senior Consultant</div>
+    </div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sb-lbl"><i class="fas fa-route"></i>销售策略阶段</div>
+    <div class="stages" id="stages">
+      <div class="stg active" data-i="0"><div class="sd"><i class="fas fa-circle" style="font-size:.35rem"></i></div><span>🤝 建立信任</span></div>
+      <div class="stg" data-i="1"><div class="sd">2</div><span>🔍 需求探索</span></div>
+      <div class="stg" data-i="2"><div class="sd">3</div><span>💡 痛点放大</span></div>
+      <div class="stg" data-i="3"><div class="sd">4</div><span>🎯 价值展示</span></div>
+      <div class="stg" data-i="4"><div class="sd">5</div><span>🏆 信任建立</span></div>
+      <div class="stg" data-i="5"><div class="sd">6</div><span>🛡️ 异议处理</span></div>
+      <div class="stg" data-i="6"><div class="sd">7</div><span>✅ 促成决策</span></div>
+    </div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sb-lbl"><i class="fas fa-volume-up"></i>语音设置</div>
+    <div class="vc-row">
+      <span class="vc-lbl">自动朗读</span>
+      <label class="tog"><input type="checkbox" id="arToggle" checked onchange="V.autoRead=this.checked;if(!V.autoRead)stopSpeak()"><span class="ts"></span></label>
+    </div>
+    <div class="vc-row"><span class="vc-lbl">语速</span></div>
+    <input type="range" class="rs" id="rRate" min=".55" max="1.3" step=".05" value=".88" oninput="V.rate=+this.value">
+    <div class="vc-row"><span class="vc-lbl">音调（低沉）</span></div>
+    <input type="range" class="rs" id="rPitch" min=".35" max="1.1" step=".05" value=".78" oninput="V.pitch=+this.value">
+  </div>
+
+  <div class="sb-sec">
+    <div class="sb-lbl"><i class="fas fa-chart-bar"></i>会话统计</div>
+    <div class="stats">
+      <div class="stat"><div class="sv" id="sTurns">0</div><div class="sl">对话轮次</div></div>
+      <div class="stat"><div class="sv" id="sVoice">0</div><div class="sl">语音次数</div></div>
+    </div>
+  </div>
+
+  <button class="newbtn" onclick="newChat()"><i class="fas fa-plus"></i>新会话</button>
+</div>
+
+<!-- CHAT -->
+<div class="chat">
+  <div class="hd">
+    <div class="hd-l">
+      <div class="hd-av">A<div class="online"></div></div>
+      <div>
+        <div class="hd-name">Alex · 营销顾问</div>
+        <div class="hd-sub">AI Marketing Consultant</div>
+      </div>
+    </div>
+    <div class="hd-status">
+      <div class="dot" id="sDot"></div>
+      <span id="sText">就绪</span>
+    </div>
+    <div class="hd-r">
+      <button class="hbtn" id="muteBtn" onclick="toggleMute()" title="静音"><i class="fas fa-volume-up"></i></button>
+    </div>
+  </div>
+
+  <div class="eb" id="eb"></div>
+
+  <div class="msgs" id="msgs">
+    <div class="wlc" id="wlc">
+      <div class="wav">A</div>
+      <div class="wt">您好，我是 Alex</div>
+      <div class="wd">资深营销顾问，帮您洞察需求、塑造价值、达成合作。<br>直接说话或输入消息开始对话。</div>
+      <div class="chips">
+        <div class="chip" onclick="qs(this)">你好，想了解一下你们的产品</div>
+        <div class="chip" onclick="qs(this)">我目前遇到了一些业务挑战</div>
+        <div class="chip" onclick="qs(this)">我在考虑升级现有方案</div>
+        <div class="chip" onclick="qs(this)">价格方面能优惠吗</div>
+        <div class="chip" onclick="qs(this)">我需要再考虑考虑</div>
+        <div class="chip" onclick="qs(this)">我们已经在用竞争对手的产品了</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inp-area">
+    <div class="viz" id="viz">
+      <div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div>
+      <div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div>
+      <div class="vb"></div><div class="vb"></div><div class="vb"></div><div class="vb"></div>
+    </div>
+    <div class="trans" id="trans"></div>
+    <div class="irow">
+      <button class="vbtn" id="vbtn" onclick="toggleVoice()" title="语音输入">
+        <i class="fas fa-microphone" id="vicon"></i>
+      </button>
+      <div class="iwrap">
+        <textarea class="ti" id="ti" placeholder="输入消息，或点击麦克风说话…" rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"
+          oninput="rz(this)"></textarea>
+      </div>
+      <button class="sbtn" id="sbtn" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  VOICE ENGINE
+// ════════════════════════════════════════════════════
+const V = {
+  synth: window.speechSynthesis,
+  voice: null,
+  autoRead: true,
+  rate: 0.88,
+  pitch: 0.78,
+  muted: false,
+};
+
+(function loadVoices(){
+  const try_ = () => {
+    const vs = V.synth.getVoices();
+    if (!vs.length) return;
+    const prio = [
+      v => v.lang.startsWith('zh') && /kangkang|yunhao|yunxi|yunjian|xiaochen|male/i.test(v.name),
+      v => /^(david|daniel|james|thomas|william|george|mark|fred|alex)\b/i.test(v.name),
+      v => /male/i.test(v.name),
+      v => /google.*en.*us/i.test(v.name.toLowerCase()),
+      v => v.lang.startsWith('en-'),
+      () => true,
+    ];
+    for (const p of prio) { const m = vs.find(p); if (m) { V.voice = m; return; } }
+  };
+  try_();
+  V.synth.onvoiceschanged = try_;
+})();
+
+function speak(text) {
+  if (V.muted || !V.autoRead || !text.trim()) return;
+  V.synth.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/[*_~`>#\[\]]/g,'').trim());
+  if (V.voice) u.voice = V.voice;
+  u.rate = V.rate; u.pitch = V.pitch; u.volume = 1;
+  u.onstart = () => { setStatus('g','说话中'); setViz('speak'); document.getElementById('vbtn').classList.add('speak'); document.getElementById('vicon').className='fas fa-volume-up'; };
+  u.onend = u.onerror = () => { setStatus('','就绪'); setViz('off'); document.getElementById('vbtn').classList.remove('speak'); document.getElementById('vicon').className='fas fa-microphone'; };
+  V.synth.speak(u);
+}
+
+function stopSpeak() { V.synth.cancel(); }
+
+function toggleMute() {
+  V.muted = !V.muted;
+  document.getElementById('muteBtn').querySelector('i').className = V.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+  document.getElementById('muteBtn').style.color = V.muted ? 'var(--red)' : '';
+  if (V.muted) stopSpeak();
+  toast(V.muted ? '已静音' : '已取消静音');
+}
+
+// ════════════════════════════════════════════════════
+//  SPEECH RECOGNITION
+// ════════════════════════════════════════════════════
+let rec = null, listening = false;
+
+(function initRec(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('vbtn').style.opacity='.3'; document.getElementById('vbtn').title='请使用 Chrome 浏览器以支持语音'; return; }
+  rec = new SR();
+  rec.lang = 'zh-CN'; rec.continuous = false; rec.interimResults = true;
+  rec.onstart = () => {
+    listening = true; setStatus('r','聆听中…'); setViz('listen');
+    document.getElementById('vbtn').classList.add('listen');
+    document.getElementById('vicon').className = 'fas fa-stop';
+    showTrans('…');
+  };
+  rec.onresult = e => {
+    let f='',t='';
+    for (let i=e.resultIndex;i<e.results.length;i++){
+      const s=e.results[i][0].transcript;
+      e.results[i].isFinal?f+=s:t+=s;
+    }
+    document.getElementById('trans').textContent = f||t;
+    if (f) { document.getElementById('ti').value=f; rz(document.getElementById('ti')); }
+  };
+  rec.onerror = e => { if(e.error!=='aborted') toast('语音错误：'+e.error); stopListen(); };
+  rec.onend = () => {
+    if (listening) {
+      stopListen();
+      const t = document.getElementById('ti').value.trim();
+      if (t) { voiceCnt++; document.getElementById('sVoice').textContent=voiceCnt; setTimeout(send,250); }
+    }
+  };
+})();
+
+function toggleVoice() {
+  if (listening) { stopListen(); return; }
+  if (!rec) { toast('请使用 Chrome 浏览器'); return; }
+  stopSpeak();
+  try { rec.start(); } catch(e) { toast('麦克风启动失败'); }
+}
+
+function stopListen() {
+  listening = false;
+  if (rec) try{rec.stop()}catch(_){}
+  document.getElementById('vbtn').classList.remove('listen','speak');
+  document.getElementById('vicon').className = 'fas fa-microphone';
+  hideTrans(); setViz('off'); setStatus('','就绪');
+}
+
+// ════════════════════════════════════════════════════
+//  CONVERSATION ENGINE — 内置智能对话逻辑
+// ════════════════════════════════════════════════════
+
+// 全局会话上下文
+let ctx = {
+  stage: 0,          // 当前策略阶段 0-6
+  turns: 0,          // 轮次
+  painPoints: [],    // 收集到的痛点
+  industry: '',      // 行业
+  company: '',       // 公司
+  budget: '',        // 预算信号
+  interestLevel: 0,  // 兴趣程度 0-10
+  lastIntent: '',    // 上一次意图
+  history: [],       // 近期用户消息
+};
+
+let turns = 0, voiceCnt = 0;
+
+// ── 意图识别 ─────────────────────────────────────────
+function detectIntent(text) {
+  const t = text.toLowerCase();
+  const match = (keywords) => keywords.some(k => t.includes(k));
+
+  if (match(['你好','您好','hi','hello','早','下午','晚上','嗨','哈喽'])) return 'greeting';
+  if (match(['价格','多少钱','费用','收费','贵','便宜','优惠','折扣','报价','预算','成本','花多少'])) return 'price';
+  if (match(['考虑','再想','商量','研究','暂时不','以后','回头','汇报','讨论一下','还没决定','不急'])) return 'objection_time';
+  if (match(['不需要','不感兴趣','不适合','不考虑','算了','不用了','再说'])) return 'objection_no';
+  if (match(['竞争对手','别家','其他家','已经用了','在用','另一家','xx','yy'])) return 'objection_competitor';
+  if (match(['效果','靠谱吗','真的吗','保证','承诺','有没有案例','成功案例','证明'])) return 'trust';
+  if (match(['问题','挑战','困难','麻烦','苦恼','头疼','解决','痛点','卡住','效率低','浪费'])) return 'pain';
+  if (match(['了解','介绍','产品','服务','功能','特点','什么','怎么用','能做什么','有什么'])) return 'product';
+  if (match(['好的','可以','感兴趣','不错','愿意','同意','行','没问题','支持','有意向','对对对'])) return 'positive';
+  if (match(['怎么开始','如何合作','下一步','签','购买','订单','合同','付款','试用','演示','演示一下'])) return 'close';
+  if (match(['团队','多少人','规模','公司','企业','行业','我们是做','部门'])) return 'company_info';
+  if (match(['为什么','原因','理由','好处','优势','比较','区别'])) return 'why';
+  if (match(['谢谢','感谢','太好了','棒','厉害','完美','满意'])) return 'thanks';
+
+  return 'generic';
+}
+
+// ── 关键词提取 ─────────────────────────────────────────
+function extractInfo(text) {
+  // 提取行业信息
+  const industries = ['电商','金融','教育','医疗','制造','零售','科技','互联网','房地产','物流','餐饮','文化','传媒'];
+  for (const ind of industries) {
+    if (text.includes(ind)) { ctx.industry = ind; break; }
+  }
+  // 提取公司规模
+  if (/\d+人/.test(text)) {
+    const m = text.match(/(\d+)人/);
+    if (m) ctx.company = m[1] + '人团队';
+  }
+  // 提取痛点关键词
+  const painKeywords = ['效率低','时间浪费','成本高','客户流失','数据混乱','沟通不畅','人手不足','增长慢','转化率低'];
+  for (const p of painKeywords) {
+    if (text.includes(p) && !ctx.painPoints.includes(p)) ctx.painPoints.push(p);
+  }
+}
+
+// ── 随机选择 ─────────────────────────────────────────
+const R = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// ── 回复库 ─────────────────────────────────────────────
+const REPLIES = {
+
+  greeting: [
+    `您好！非常高兴认识您。我是 Alex，专注帮助企业解决增长和效率方面的问题已经15年了。\n\n您今天联系我，是有什么具体的业务问题想探讨，还是只是初步了解一下呢？`,
+    `您好，欢迎！我是 Alex，很高兴有机会和您交流。\n\n我通常习惯先了解一下对方的情况——请问您目前主要负责哪方面的工作呢？`,
+    `您好！感谢您抽出时间。我是 Alex，做过很多不同行业的企业咨询，每次都很期待听到新的故事。\n\n您现在方便聊一下，您所在行业目前面临的最大挑战是什么吗？`,
+  ],
+
+  product: [
+    `好问题！我们的核心是帮助企业解决三类问题：**获客效率低、客户管理混乱、转化率不理想**。\n\n不过在我详细介绍之前，我更想先了解您——您目前在这三块里，哪个是最让您头疼的？`,
+    `当然可以介绍。不过我发现，直接"介绍产品"往往效果不好，因为每个企业的情况都不一样。\n\n能告诉我您目前的业务规模大概是怎样的吗？这样我能给您最相关的部分。`,
+    `我们能做的事情很多，但最有价值的是针对您的具体场景。\n\n您说"想了解产品"——是因为您现在遇到了某个问题想解决，还是纯粹的市场调研呢？`,
+  ],
+
+  pain: () => {
+    const acks = ['我理解', '这个我经常听到', '确实，这是很多企业的共同痛点'];
+    const ack = R(acks);
+    const questions = [
+      `这个问题大概影响了您多长时间了？每个月大概因为这个损失多少时间或者资金呢？`,
+      `如果这个问题一直没有解决，您觉得半年后会是什么状态？`,
+      `除了这个问题，还有没有其他让您比较头疼的地方？`,
+    ];
+    ctx.stage = Math.max(ctx.stage, 2);
+    return `${ack}，这类问题比您想象的更普遍。\n\n${R(questions)}`;
+  },
+
+  pain_deep: () => {
+    const p = ctx.painPoints.length > 0 ? ctx.painPoints[0] : '这个问题';
+    ctx.stage = Math.max(ctx.stage, 2);
+    return `${p}这件事，表面上看是个效率问题，但背后通常意味着更大的机会成本——**时间损失、团队士气、客户体验**都会连带受影响。\n\n您有没有尝试过其他解决方案？效果怎么样？`;
+  },
+
+  price: () => {
+    ctx.budget = 'price_sensitive';
+    ctx.stage = Math.max(ctx.stage, 5);
+    const resps = [
+      `价格是非常重要的决策因素，我完全理解。\n\n不过我想先问您一个问题：如果我们的方案能帮您每个月节省20个小时的人力，或者提升15%的转化率，您觉得这对您来说值多少钱？这样我才能判断我们的方案是否符合您的预期。`,
+      `好问题。我们的定价是根据客户规模和需求定制的，所以我没法直接给您一个数字。\n\n但我可以告诉您，我们大多数客户在使用3个月后，节省的成本就已经超过了投入。您目前最看重的是哪方面的回报——时间效率，还是直接的收入增长？`,
+      `价格这个问题，我们一定会找到一个双方都满意的方案。\n\n在谈具体数字之前，我更想确认一件事：您现在的痛点到底有多迫切？如果问题不紧急，任何价格都会显得贵；如果问题很痛，合理的价格反而是最小的障碍。您觉得呢？`,
+    ];
+    return R(resps);
+  },
+
+  objection_time: () => {
+    ctx.stage = Math.max(ctx.stage, 5);
+    const resps = [
+      `完全理解，大事情确实需要时间。\n\n我想多了解一下——您说"再考虑考虑"，主要是还有哪些疑虑没有消除？是价格、效果、还是内部决策流程的问题？这样我能帮您更有针对性地准备资料。`,
+      `没问题，慎重决策是对的。\n\n不过我想提醒您一点：我们目前有几家跟您情况类似的企业正在洽谈，资源是有限的。当然我绝对不是催您，只是想问——您大概需要多长时间来做决定？这样我可以帮您安排一个更合适的时间节点。`,
+      `好的，我尊重您的节奏。\n\n能告诉我，您在等什么条件成熟之后才会做决定？是需要某个上级审批，还是在等某个财务周期，还是还有其他顾虑？`,
+    ];
+    return R(resps);
+  },
+
+  objection_no: () => {
+    ctx.stage = Math.max(ctx.stage, 5);
+    return `我理解，不合适的方案当然不应该强求。\n\n我很好奇——您说"不需要"，是因为您目前已经有了一个不错的解决方案，还是觉得这类问题对您来说还没到非解决不可的地步？\n\n只是想更了解您的想法，不会强推。`;
+  },
+
+  objection_competitor: () => {
+    ctx.stage = Math.max(ctx.stage, 5);
+    const resps = [
+      `明白，已经有在用了。这很正常，市场上有几家做得不错的。\n\n我不会说竞品不好，但我想问您：您现在用的方案里，有没有哪个地方让您觉得"如果能更好一点就完美了"？通常就是这个地方，我们能带来真正的价值。`,
+      `能用上解决方案是好事，说明您对这块是重视的。\n\n跟我说说，您用下来感觉哪些功能最实用，哪些地方还有提升空间？我不是要拉您过来，只是想看看我们有没有互补的可能。`,
+    ];
+    return R(resps);
+  },
+
+  trust: () => {
+    ctx.stage = Math.max(ctx.stage, 4);
+    const cases = ctx.industry
+      ? `在${ctx.industry}行业`
+      : '在类似规模的企业';
+    return `这是一个很务实的问题，我喜欢。\n\n我们${cases}有过不少实际案例，举个例子：一家做B2B销售的客户，在引入我们的方案后，销售跟进效率提升了40%，季度成交额增长了23%。他们最初也是抱着"试试看"的心态。\n\n我们可以安排一个免费的30分钟演示，让您看到实际效果而不是听我说。您下周有空吗？`;
+  },
+
+  positive: () => {
+    ctx.interestLevel = Math.min(ctx.interestLevel + 2, 10);
+    ctx.stage = Math.max(ctx.stage, 3);
+    const resps = [
+      `很高兴听到这个！那我们就更深入聊聊。\n\n您最希望我们的方案帮您解决的，是哪一个最迫切的问题？把它说出来，我来告诉您我们具体能怎么做。`,
+      `太好了，我们方向一致。\n\n接下来最重要的一步是让您亲眼看到效果，而不是听我介绍。我们可以安排一个专属演示，针对您的具体场景——您这周哪天方便？`,
+      `很好！那我们来谈谈具体的合作方式。\n\n通常我们有两个起步方案：一个是先做小规模试点验证效果，另一个是直接全面部署。根据您的情况，您倾向于哪种方式？`,
+    ];
+    return R(resps);
+  },
+
+  close: () => {
+    ctx.stage = Math.max(ctx.stage, 6);
+    const resps = [
+      `很好，我们到了最有意思的环节！\n\n我建议这样：先安排一个**30分钟的免费演示**，我们根据您的实际场景来展示，没有任何压力。如果您觉得合适，再谈正式合作的细节。您看这样可以吗？`,
+      `非常好！合作的第一步通常是签一份简单的意向协议，然后我们的技术团队会根据您的情况制定实施方案，通常2周内就能上线。\n\n您现在最主要的顾虑是什么？把它说出来，我们一起解决。`,
+      `好的，让我们把下一步定下来。\n\n方案A：先免费试用14天，您亲身体验后再决定；方案B：直接启动正式合作，享受首期优惠。\n\n您更倾向于哪个？`,
+    ];
+    return R(resps);
+  },
+
+  company_info: () => {
+    ctx.stage = Math.max(ctx.stage, 1);
+    return `了解，感谢您的介绍${ctx.company ? '，' + ctx.company + '规模的团队' : ''}。\n\n像您这个阶段的企业，通常面临的挑战主要集中在**效率和增长**两个方向。\n\n您这边目前最大的瓶颈是在哪里？是人手不够，流程混乱，还是增长遇到了天花板？`;
+  },
+
+  why: () => {
+    ctx.stage = Math.max(ctx.stage, 3);
+    const resps = [
+      `好问题。跟其他方案相比，我们最大的差异不是功能，而是**结果导向**——我们的服务协议里写的是"达到X目标才收全款"，而不是"提供服务即完成"。\n\n这让我们的团队从一开始就和您站在同一边。这种模式对您来说重要吗？`,
+      `我来讲一个真实的差别：大多数工具告诉你"我们能做什么"，我们告诉你"你能得到什么结果"。\n\n我们有专属的落地支持团队，不是给你一套软件然后让你自己摸索。这对您来说重不重要？`,
+    ];
+    return R(resps);
+  },
+
+  thanks: () => {
+    const resps = [
+      `谢谢您的认可，这是我最大的动力。\n\n既然聊得这么投机，要不要把下一步定下来？哪怕只是一个30分钟的演示，也能让我们的合作更有方向感。`,
+      `很高兴能帮到您！\n\n那我们趁热打铁——您现在最想进一步了解的是哪个方面？`,
+    ];
+    return R(resps);
+  },
+
+  generic: () => {
+    const byStage = [
+      // stage 0: 建立信任
+      [
+        `我理解您的意思。在我们深入聊之前，我想先多了解您一点——您目前的工作中，**最花时间却效果不好的事情**是什么？`,
+        `有意思。那请问您是做哪个行业的？不同行业面对的问题差异很大，我想给您最有针对性的建议。`,
+      ],
+      // stage 1: 需求探索
+      [
+        `我听到了。再深入问一下——这个情况持续多久了？您有没有算过，这个问题每个月大概让公司损失多少？`,
+        `明白。那您现在为了解决这个问题，都做过哪些尝试？效果怎么样？`,
+      ],
+      // stage 2: 痛点放大
+      [
+        `这个痛点比很多人想象的要严重。我跟很多类似企业聊过，这种问题如果不从根上解决，往往会越来越难——团队士气、客户满意度都会受影响。\n\n您觉得如果明年这个时候还是老样子，对您来说意味着什么？`,
+        `我理解。很多企业到这个阶段都会有类似的感受——明明知道有问题，但找不到突破口。\n\n您现在最缺的是一个好工具，还是一个清晰的方向？`,
+      ],
+      // stage 3+: 价值展示
+      [
+        `我来给您讲一个真实的案例：一家跟您规模相近的企业，6个月前跟您有类似的困境，我们介入之后，他们的核心指标提升了30%以上。\n\n您觉得如果实现类似的改变，对您的业务意味着什么？`,
+        `基于您说的这些，我有一个初步判断。您的核心问题其实是**系统性的**，不是单点突破能解决的。\n\n我们可以为您设计一个分阶段的方案，先解决最紧迫的，再逐步优化其他部分。这个方向您认可吗？`,
+      ],
+    ];
+    const stageGroup = Math.min(Math.floor(ctx.stage / 1.5), byStage.length - 1);
+    return R(byStage[stageGroup]);
+  },
+};
+
+// ── 回复生成器 ─────────────────────────────────────────
+function getReply(text) {
+  extractInfo(text);
+  ctx.history.push(text);
+  if (ctx.history.length > 5) ctx.history.shift();
+
+  const intent = detectIntent(text);
+  ctx.lastIntent = intent;
+
+  // 动态调整兴趣值
+  if (['positive','close','trust'].includes(intent)) ctx.interestLevel = Math.min(ctx.interestLevel + 2, 10);
+  if (['objection_no','objection_competitor'].includes(intent)) ctx.interestLevel = Math.max(ctx.interestLevel - 1, 0);
+
+  // 获取回复
+  let reply;
+  const fn = REPLIES[intent];
+  if (typeof fn === 'function') reply = fn();
+  else if (Array.isArray(fn)) reply = R(fn);
+  else {
+    // 根据通用意图+阶段
+    reply = REPLIES.generic();
+  }
+
+  // 自动推进阶段（基于轮次）
+  const stageByTurn = [0, 1, 2, 3, 4, 5, 6];
+  const autoStage = Math.min(Math.floor(ctx.turns / 2.5), 6);
+  ctx.stage = Math.max(ctx.stage, Math.min(autoStage, 3)); // 不超过第4阶段，让对话自然推进
+
+  return reply;
+}
+
+// ════════════════════════════════════════════════════
+//  CHAT CONTROLLER
+// ════════════════════════════════════════════════════
+let busy = false;
+
+function send() {
+  const inp = document.getElementById('ti');
+  const text = inp.value.trim();
+  if (!text || busy) return;
+
+  document.getElementById('wlc')?.remove();
+  inp.value = ''; rz(inp);
+
+  addBubble('user', text);
+  turns++; ctx.turns++;
+  document.getElementById('sTurns').textContent = turns;
+  advStage();
+
+  busy = true;
+  document.getElementById('sbtn').disabled = true;
+  setStatus('','思考中…');
+
+  const tid = addTyping();
+
+  // 模拟思考延迟（自然感）
+  const delay = 900 + Math.random() * 800;
+  setTimeout(() => {
+    removeEl(tid);
+    const reply = getReply(text);
+    typeOut(reply, () => {
+      busy = false;
+      document.getElementById('sbtn').disabled = false;
+      setStatus('','就绪');
+    });
+  }, delay);
+}
+
+function qs(el) {
+  document.getElementById('ti').value = el.textContent;
+  send();
+}
+
+// 打字机效果输出
+function typeOut(text, onDone) {
+  const bub = addBotBubble();
+  bub.classList.add('typing-cur');
+  const chars = [...text];
+  let i = 0;
+  const speed = () => 18 + Math.random() * 12;
+  const tick = () => {
+    if (i >= chars.length) {
+      bub.classList.remove('typing-cur');
+      setStatus('','就绪');
+      // 格式化：**bold** → <strong>
+      bub.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--gold2)">$1</strong>').replace(/\n/g,'<br>');
+      scrollEnd();
+      speak(text.replace(/\*\*/g,''));
+      onDone && onDone();
+      return;
+    }
+    bub.textContent = chars.slice(0, ++i).join('');
+    scrollEnd();
+    setTimeout(tick, speed());
+  };
+  setStatus('g','回复中…');
+  tick();
+}
+
+// 自动问候
+setTimeout(() => {
+  busy = true;
+  document.getElementById('sbtn').disabled = true;
+  const tid = addTyping();
+  setTimeout(() => {
+    removeEl(tid);
+    const greeting = `您好！非常高兴认识您，我是 Alex。\n\n我专注帮助企业解决增长和效率问题已有15年，服务过${R(['300+','200+','400+'])}家不同规模的企业。\n\n不废话，直接问您：**目前您业务上最让您头疼的一件事是什么？** 我来看看能不能帮上忙。`;
+    typeOut(greeting, () => {
+      busy = false;
+      document.getElementById('sbtn').disabled = false;
+    });
+  }, 1200);
+}, 800);
+
+// ════════════════════════════════════════════════════
+//  NEW CHAT
+// ════════════════════════════════════════════════════
+function newChat() {
+  if (busy) return;
+  stopSpeak(); stopListen();
+  ctx = { stage:0, turns:0, painPoints:[], industry:'', company:'', budget:'', interestLevel:0, lastIntent:'', history:[] };
+  turns = 0; voiceCnt = 0;
+  document.getElementById('sTurns').textContent = '0';
+  document.getElementById('sVoice').textContent = '0';
+  document.querySelectorAll('.stg').forEach((el,i) => { el.classList.remove('active','done'); if(i===0) el.classList.add('active'); });
+
+  const msgs = document.getElementById('msgs');
+  msgs.innerHTML = '';
+
+  busy = true;
+  document.getElementById('sbtn').disabled = true;
+  const tid = addTyping();
+  setTimeout(() => {
+    removeEl(tid);
+    const g = `您好！新会话开始了。我是 Alex，很高兴再次为您服务。\n\n这次想聊什么？业务增长、效率提升，还是有个具体的问题想解决？`;
+    typeOut(g, () => { busy = false; document.getElementById('sbtn').disabled = false; });
+  }, 1000);
+  hideErr();
+}
+
+// ════════════════════════════════════════════════════
+//  DOM HELPERS
+// ════════════════════════════════════════════════════
+function addBubble(role, text) {
+  const msgs = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  const av = document.createElement('div');
+  av.className = `mav ${role==='bot'?'b':'u'}`;
+  av.textContent = role==='bot'?'A':'我';
+  const wrap = document.createElement('div');
+  const bub = document.createElement('div');
+  bub.className = 'bub';
+  bub.textContent = text;
+  const tm = document.createElement('div');
+  tm.className = 'mt';
+  tm.textContent = now();
+  wrap.append(bub, tm);
+  d.append(av, wrap);
+  msgs.appendChild(d);
+  scrollEnd();
+  return bub;
+}
+
+function addBotBubble() { return addBubble('bot',''); }
+
+function addTyping() {
+  const id = 'tid'+Date.now();
+  const msgs = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.id = id; d.className = 'tdot';
+  d.innerHTML = '<div class="mav b">A</div><div class="tdots"><span></span><span></span><span></span></div>';
+  msgs.appendChild(d); scrollEnd();
+  return id;
+}
+
+function removeEl(id) { document.getElementById(id)?.remove(); }
+function scrollEnd() { const m=document.getElementById('msgs'); m.scrollTop=m.scrollHeight; }
+function now() { return new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}); }
+function rz(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+function setViz(m) {
+  const v = document.getElementById('viz');
+  v.className = 'viz' + (m==='off'?'':' on '+m);
+}
+
+function setStatus(c, t) {
+  const d = document.getElementById('sDot');
+  d.className = 'dot' + (c?' '+c:'');
+  document.getElementById('sText').textContent = t;
+}
+
+function showTrans(t) { const e=document.getElementById('trans'); e.textContent=t; e.classList.add('on'); }
+function hideTrans() { const e=document.getElementById('trans'); e.classList.remove('on'); e.textContent=''; }
+function hideErr() { document.getElementById('eb').classList.remove('on'); }
+
+function advStage() {
+  document.querySelectorAll('.stg').forEach((el,i) => {
+    el.classList.remove('active','done');
+    if (i < ctx.stage) el.classList.add('done');
+    else if (i === ctx.stage) el.classList.add('active');
+  });
+}
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type?' '+type:'');
+  setTimeout(() => t.className='toast', 2800);
+}
+</script>
+</body>
+</html>
